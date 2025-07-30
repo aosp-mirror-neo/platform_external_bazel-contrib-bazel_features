@@ -7,14 +7,14 @@ description: "Support Bazel feature detection from starlark"
 third_party {
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 12
-    day: 10
+    year: 2025
+    month: 7
+    day: 30
   }
   identifier {
     type: "Git"
     value: "https://github.com/bazel-contrib/bazel_features"
-    version: "v1.22.0"
+    version: "v1.30.0"
     primary_source: true
   }
 }
