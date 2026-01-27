@@ -14,7 +14,8 @@ third_party {
   identifier {
     type: "Git"
     value: "https://github.com/bazel-contrib/bazel_features"
-    version: "v1.30.0"
+    version: "d5ecc8a30dff140d5ab89fee5457cf756a47c742"
+    closest_version: "v1.30.0"
     primary_source: true
   }
 }
