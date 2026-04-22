@@ -41,6 +41,22 @@ _cc = struct(
     # Whether cc_{binary,test} can be extended.
     # https://github.com/bazelbuild/bazel/commit/b746d663da71f937390809f0e8368112cafafb56
     rules_support_extension = ge("8.0.1"),
+    # Whether cc_toolchain has the generate_modmap attribute.
+    # https://github.com/bazelbuild/bazel/commit/8028655414a189b6897b1b51e3e43b5711e0af98
+    cc_toolchain_has_generate_modmap = gt("9.0.0-pre.20250716.1"),
+    # Whether cc_toolchain is imlemented in starlark.
+    # https://github.com/bazelbuild/bazel/commit/b9f1721f79bb1f21e39d74c13878a33f05fa7034
+    supports_starlarkified_toolchains = gt("9.0.0-pre.20250911"),
+    # Whether cc_common is taken from rules_cc, in its starlarkified version,
+    # rather than the builtin, typically native cc_common of Bazel 7 and Bazel 8.
+    # One behavioral change between the two comes from
+    # https://github.com/bazelbuild/bazel/pull/25750, and it is expected that more
+    # will accumulate as cc_common in rules_cc evolves further while cc_common in
+    # Bazel 7 and Bazel 8 stays as it is.
+    # The tests in rules_cc need to be able to take this into account.
+    # The compatibility proxy in rules_cc/cc/extensions.bzl:31 switches from native to
+    # rules_cc at Bazel version 9.0.0-pre.20250911.
+    cc_common_is_in_rules_cc = ge("9.0.0-pre.20250911"),
 )
 
 _docs = struct(
@@ -76,6 +92,10 @@ _external_deps = struct(
     # https://github.com/bazelbuild/bazel/commit/c796aba6ee36970956ea32b46a2f121bb4d1818a
     # https://github.com/bazelbuild/bazel/commit/e730201e6bf8d6c1c80433b5b42305c3167a8660
     extension_metadata_has_reproducible = ge_same_major("7.1.0") or ge("8.0.0-pre.20240213.1"),
+    # Whether repository_ctx.repo_metadata has the reproducible parameter (#25938)
+    # https://github.com/bazelbuild/bazel/commit/ad74aa5d9e29e7d4ab3043328ee25901be9e14f6
+    # https://github.com/bazelbuild/bazel/commit/33ee3b5acebbfffe74ef2ab8c3f437cb38382843
+    repo_metadata_has_reproducible = ge_same_major("8.3.0") or ge("9.0.0-pre.20250831.1"),
     # Whether repository_ctx#getenv exists (#19511)
     # Note: This primarily targets conditionally adding environ
     # attributes to repository rule declarations.  Inside repository rule
@@ -84,6 +104,10 @@ _external_deps = struct(
     # https://github.com/bazelbuild/bazel/commit/c230e39fb225edd206ed0aa07cfcdd8c51589965
     # https://github.com/bazelbuild/bazel/commit/25815511434d17f2843f73e0ff5231f3d80bc44e
     repository_ctx_has_getenv = ge_same_major("7.1.0") or ge("8.0.0-pre.20240128.3"),
+    # Whether rctx.symlink calls get rewritten to be relative symlinks when the repo is cached.
+    # https://github.com/bazelbuild/bazel/commit/2ce32e70485ab807e5188efcb696927ec6606a3e
+    # https://github.com/bazelbuild/bazel/commit/4edfe3276c127f73145018f4973cc422da61f05d
+    repo_rules_relativize_symlinks = ge_same_major("9.0.1") or ge("10.0.0-pre.20260322.2"),
 )
 
 _flags = struct(
@@ -119,17 +143,40 @@ _rules = struct(
     # metadata_files parameter.  Introduced in commit
     # https://github.com/bazelbuild/bazel/commit/ef54ef5d17a013c863c4e2fb0583e6bd209645f2.
     instrumented_files_info_has_metadata_files = ge("7.0.0-pre.20230710.5"),
+    # Whether coverage_common.instrumented_files_info supports the
+    # baseline_coverage_files parameter.  Introduced in commit
+    # https://github.com/bazelbuild/bazel/commit/e672aceda6fba37171bebce77c5ee62442337c23
+    instrumented_files_info_has_baseline_coverage_files = gt("9.0.0-pre.20250610.2"),
     # Whether treeartifacts can have symlinks pointing outside of the tree artifact. (#21263)
     permits_treeartifact_uplevel_symlinks = ge("7.1.0"),
     # Whether rule extension APIs are available by default
     rule_extension_apis_available = ge("8.0.0rc1"),
     # Whether Starlark anaylsis tests can transition on incompatible/experimental flags (#25536)
     analysis_tests_can_transition_on_experimental_incompatible_flags = ge("8.2.0"),
+    # Whether the attr_aspects and toolchains_aspects attributes on aspect accept Starlark functions.
+    # https://github.com/bazelbuild/bazel/commit/c422744caa072c66311a937049504901bc674b7d
+    aspect_propagation_context = ge("9.0.0-pre.20250311.1"),
+    # Whether structs can have fields names 'to_json' and 'to_proto'.
+    # https://github.com/bazelbuild/bazel/commit/db5906870bdcb1631e1b18be8637aa21b79cf943
+    no_struct_field_denylist = ge("9.0.0-pre.20250128.3"),
+    # Whether the new merkle cache exists, which is on by default and handles source directories efficiently.
+    # https://github.com/bazelbuild/bazel/commit/30ca50950fdaff032925efe64c2690a9f05e074d
+    merkle_cache_v2 = gt("9.0.0-pre.20251014.1"),
+    # Whether ctx.actions.symlink accepts a target_type argument to create junctions on Windows.
+    # https://github.com/bazelbuild/bazel/commit/b9bbda939cddab807e34559cb7ee798febfa3861
+    symlink_action_has_target_type = ge_same_major("8.6.0") or ge("9.0.0"),
+    # Whether ctx.actions.write accepts a mnemonic parameter.
+    # https://github.com/bazelbuild/bazel/commit/34673f3371229fe310b433cf6ade353b9610f9fb
+    write_action_has_mnemonic = ge("9.0.0-pre.20250710.1"),
+    # Whether ctx.actions.write supports the execution_requirements parameter.
+    # https://github.com/bazelbuild/bazel/commit/2e4abf8b2252512947298300a03750574f050ce6
+    # https://github.com/bazel-io/bazel/commit/825369f7231b11f2d966bf8f3ef2d4905eae1344
+    write_action_has_execution_requirements = ge_same_major("9.1.0") or gt("10.0.0-pre.20260120.1"),
 
     # Internal only, don't use outside rules_java, rules_python & rules_shell.
     # TODO: Use a larger version range after cherry-picking
     # https://github.com/bazelbuild/bazel/commit/e81949554f3ecab5e2c4afd79031f498f36427fe
-    _has_launcher_maker_toolchain = gt("9.0.0-pre.20250506.6"),
+    _has_launcher_maker_toolchain = ge_same_major("8.3.0") or ge("9.0.0-pre.20250516.1"),
 )
 
 _toolchains = struct(
@@ -139,6 +186,12 @@ _toolchains = struct(
     # Whether the use_target_platform_constraints attribute is available on the toolchain rule (#25123)
     # https://github.com/bazelbuild/bazel/commit/ba9e539a086859afaa4d2b3bf8d3afb44bcd06ce
     has_use_target_platform_constraints = ge("8.2.0"),
+    # Whether genrule.toolchains accepts toolchain_type targets
+    # https://github.com/bazelbuild/bazel/commit/0e876b1794d4db58b72949014401d22cc65d94a1
+    genrule_accepts_toolchain_types = ge_same_major("8.3.0") or ge("9.0.0-pre.20241016.1"),
+    # Whether the default_test_toolchain_type exists
+    # https://github.com/bazelbuild/bazel/commit/7d685648a8a9e4ea203f95ad983088a17103f4a6
+    has_default_test_toolchain_type = ge("9.0.0-pre.20250324.2"),
 )
 
 bazel_features = struct(
